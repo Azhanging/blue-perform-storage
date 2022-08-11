@@ -34,11 +34,11 @@
     "webpack-merge": "^4.1.2"
   },
   "repositories": [
-    "https://github.com/Azhanging/blue-pend"
+    "https://github.com/Azhanging/blue-perform-storage"
   ],
   "bugs": {
     "mail": "azhanging@qq.com",
-    "web": "https://github.com/Azhanging/blue-pend"
+    "web": "https://github.com/Azhanging/blue-perform-storage"
   },
   "dependencies": {
     "blue-queue-pipe": "^1.1.4"

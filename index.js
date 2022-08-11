@@ -1,1 +1,1 @@
-module.exports = require('./dist/blue-pend');
+module.exports = require('./dist/blue-perform-storage');
