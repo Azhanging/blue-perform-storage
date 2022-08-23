@@ -1,10 +1,10 @@
 /*!
  * 
- * blue-perform-storage.js 1.0.0
+ * blue-perform-storage.js 1.0.1
  * (c) 2016-2022 Blue
  * Released under the MIT License.
  * https://github.com/azhanging/blue-perform-storage
- * time:Thu, 11 Aug 2022 12:35:39 GMT
+ * time:Tue, 23 Aug 2022 14:15:56 GMT
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -196,7 +196,7 @@ function browser() {
 function weChatGlobal() {
     try {
         //@ts-ignore
-        return wx;
+        return wx && wx.setStorageSync && wx.getStorageSync;
     }
     catch (e) {
         return false;
@@ -205,7 +205,7 @@ function weChatGlobal() {
 function uniGlobal() {
     try {
         //@ts-ignore
-        return uni;
+        return uni && uni.setStorageSync && uni.getStorageSync;
     }
     catch (e) {
         return false;
@@ -214,7 +214,7 @@ function uniGlobal() {
 function aliPayGlobal() {
     try {
         //@ts-ignore
-        return my;
+        return my && my.setStorageSync && my.getStorageSync;
     }
     catch (e) {
         return false;
@@ -222,13 +222,13 @@ function aliPayGlobal() {
 }
 //兼容处理
 var storage = (function () {
-    if (weChatGlobal()) {
-        //微信小程序
-        return weChatMiniProgram();
-    }
-    else if (aliPayGlobal() || uniGlobal()) {
+    if (aliPayGlobal() || uniGlobal()) {
         //uni 或者 支付宝
         return uniOrAliPayMiniProgram();
+    }
+    else if (weChatGlobal()) {
+        //微信小程序
+        return weChatMiniProgram();
     }
     else if (window && window.localStorage) {
         //浏览器

@@ -130,7 +130,7 @@ function browser() {
 function weChatGlobal(): any {
   try {
     //@ts-ignore
-    return wx;
+    return wx && wx.setStorageSync && wx.getStorageSync;
   } catch (e) {
     return false;
   }
@@ -139,7 +139,7 @@ function weChatGlobal(): any {
 function uniGlobal(): any {
   try {
     //@ts-ignore
-    return uni;
+    return uni && uni.setStorageSync && uni.getStorageSync;
   } catch (e) {
     return false;
   }
@@ -148,7 +148,7 @@ function uniGlobal(): any {
 function aliPayGlobal(): any {
   try {
     //@ts-ignore
-    return my;
+    return my && my.setStorageSync && my.getStorageSync;
   } catch (e) {
     return false;
   }
@@ -156,12 +156,12 @@ function aliPayGlobal(): any {
 
 //兼容处理
 const storage = (() => {
-  if (weChatGlobal()) {
-    //微信小程序
-    return weChatMiniProgram();
-  } else if (aliPayGlobal() || uniGlobal()) {
+  if (aliPayGlobal() || uniGlobal()) {
     //uni 或者 支付宝
     return uniOrAliPayMiniProgram();
+  } else if (weChatGlobal()) {
+    //微信小程序
+    return weChatMiniProgram();
   } else if (window && window.localStorage) {
     //浏览器
     return browser();

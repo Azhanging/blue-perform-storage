@@ -1,6 +1,6 @@
 {
   "name": "blue-perform-storage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "perform storage",
   "main": "./index.js",
   "types": "./types/index.d.ts",
@@ -8,7 +8,7 @@
     "dev": "webpack-dev-server --config blue-build-library/dev.js",
     "build": "node  blue-build-library/build.js"
   },
-  "keyword": [
+  "keywords": [
     "perform storage",
     "wechat miniprogram perform storage",
     "uni miniprogram  perform storage",
