@@ -1,174 +1,14 @@
-type TKey = string;
-type THook = Function | undefined;
-
-//可执行得处理配置
-interface TKeyHandlerOptions {
-  key: TKey;
-}
-
-//可执行得处理配置
-interface TStorageHandlerOptions extends TKeyHandlerOptions {
-  expire?: number;
-}
-
-//设置处理类型
-interface TSetStorageHandlerOptions extends TStorageHandlerOptions {
-  data?: any;
-}
-
-//key配置相关
-interface TKeyOptions extends TStorageHandlerOptions {
-  prefixName?: string;
-  expireTimeName?: string;
-}
-
-//构造 狗子
-interface TConstructorOptionsHooks {
-  set?: THook;
-  get?: THook;
-  remove?: THook;
-}
-
-//构造器配置信息
-interface TConstructorOptions {
-  //钩子处理
-  hooks?: TConstructorOptionsHooks;
-  //前缀名
-  prefixName?: string;
-  //超时时间名
-  expireTimeName?: string;
-  //构造keys配置
-  keys?: TKeyOptions[];
-}
-
-//hook处理
-function hook(ctx: any, fn: any, args: any[] = []) {
-  if (typeof fn === `function`) {
-    return fn.apply(ctx, args);
-  }
-  return fn;
-}
-
-//是否存在key记录
-function hasKey(platform: any, key: string): boolean {
-  const info = platform.getStorageInfoSync();
-  return !!info.keys[key];
-}
-
-//微信小程序
-function weChatMiniProgram() {
-  return {
-    setStorage(opts: TSetStorageHandlerOptions) {
-      const { key, data } = opts;
-      //@ts-ignore
-      wx.setStorageSync(key, data);
-    },
-    getStorage(opts: TKeyHandlerOptions): any {
-      const { key } = opts;
-      //@ts-ignore
-      return wx.getStorageSync(key);
-    },
-    removeStorage(opts: TKeyHandlerOptions) {
-      const { key } = opts;
-      //@ts-ignore
-      wx.removeStorageSync(key);
-    },
-    //是否存在key值
-    hasKey(key: string): boolean {
-      //@ts-ignore
-      return hasKey(wx, key);
-    },
-  };
-}
-
-//uni 或者 支付宝
-function uniOrAliPayMiniProgram() {
-  //@ts-ignore
-  const platform = my || uni;
-  return {
-    setStorage: platform.setStorageSync,
-    getStorage: platform.getStorageSync,
-    removeStorage: platform.removeStorageSync,
-    //是否存在key值
-    hasKey(key: string): boolean {
-      return hasKey(platform, key);
-    },
-  };
-}
-
-//浏览器
-function browser() {
-  const { localStorage } = window;
-  return {
-    setStorage(opts: TSetStorageHandlerOptions) {
-      const { key, data } = opts;
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-      } catch (e) {
-        return localStorage.setItem(key, data);
-      }
-    },
-    getStorage(opts: TKeyHandlerOptions) {
-      const { key } = opts;
-      try {
-        return JSON.parse(localStorage.getItem(key));
-      } catch (e) {
-        return localStorage.getItem(key);
-      }
-    },
-    removeStorage(opts: TKeyHandlerOptions) {
-      const { key } = opts;
-      return localStorage.removeItem(key);
-    },
-    //是否存在key值
-    hasKey(key: string) {
-      return key in localStorage;
-    },
-  };
-}
-
-function weChatGlobal(): any {
-  try {
-    //@ts-ignore
-    return wx && wx.setStorageSync && wx.getStorageSync;
-  } catch (e) {
-    return false;
-  }
-}
-
-function uniGlobal(): any {
-  try {
-    //@ts-ignore
-    return uni && uni.setStorageSync && uni.getStorageSync;
-  } catch (e) {
-    return false;
-  }
-}
-
-function aliPayGlobal(): any {
-  try {
-    //@ts-ignore
-    return my && my.setStorageSync && my.getStorageSync;
-  } catch (e) {
-    return false;
-  }
-}
-
-//兼容处理
-const storage = (() => {
-  if (aliPayGlobal() || uniGlobal()) {
-    //uni 或者 支付宝
-    return uniOrAliPayMiniProgram();
-  } else if (weChatGlobal()) {
-    //微信小程序
-    return weChatMiniProgram();
-  } else if (window && window.localStorage) {
-    //浏览器
-    return browser();
-  }
-  console.warn(`当前环境不支持`);
-  return null;
-})();
+import {
+  TKey,
+  TKeyHandlerOptions,
+  TStorageHandlerOptions,
+  TSetStorageHandlerOptions,
+  TKeyOptions,
+  TConstructorOptionsHooks,
+  TConstructorOptions,
+} from "./types";
+import storage from "./storage";
+import { hook } from "./hook";
 
 //存储的方法名
 function genStorageMethodName(key: TKey): string {
@@ -285,29 +125,26 @@ function definePropertiesPerform(
   Object.defineProperties(this, {
     //绑定到实例上
     [`set${storageMethodName}`]: {
-      value: (data) => {
-        return this.setStorage({
+      value: (data: any) =>
+        this.setStorage({
           key,
           data,
           expire,
-        });
-      },
+        }),
       writable,
     },
     [`get${storageMethodName}`]: {
-      value: () => {
-        return this.getStorage({
+      value: () =>
+        this.getStorage({
           key,
-        });
-      },
+        }),
       writable,
     },
     [`remove${storageMethodName}`]: {
-      value: () => {
-        return this.removeStorage({
+      value: () =>
+        this.removeStorage({
           key,
-        });
-      },
+        }),
       writable,
     },
   });
@@ -396,7 +233,7 @@ export default class BluePerformStorage {
   }
 
   //删除过期
-  removeExpireTimeStorage(opts: TKeyHandlerOptions) {
+  removeExpireTimeStorage(opts: TKeyHandlerOptions): void {
     const { key } = opts;
     //删除超时时间
     this.removeStorage({
@@ -407,7 +244,7 @@ export default class BluePerformStorage {
   }
 
   //生成对应的存储方法
-  generate(opts: TKeyHandlerOptions) {
+  generate(opts: TKeyHandlerOptions): void {
     const { key = `` } = opts;
     //不设置不处理
     if (!key) return;

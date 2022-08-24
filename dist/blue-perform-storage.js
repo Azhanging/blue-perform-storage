@@ -1,10 +1,10 @@
 /*!
  * 
- * blue-perform-storage.js 1.0.1
+ * blue-perform-storage.js 1.0.2
  * (c) 2016-2022 Blue
  * Released under the MIT License.
  * https://github.com/azhanging/blue-perform-storage
- * time:Tue, 23 Aug 2022 14:15:56 GMT
+ * time:Wed, 24 Aug 2022 18:19:32 GMT
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -109,134 +109,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//hook处理
-function hook(ctx, fn, args) {
-    if (args === void 0) { args = []; }
-    if (typeof fn === "function") {
-        return fn.apply(ctx, args);
-    }
-    return fn;
-}
-//是否存在key记录
-function hasKey(platform, key) {
-    var info = platform.getStorageInfoSync();
-    return !!info.keys[key];
-}
-//微信小程序
-function weChatMiniProgram() {
-    return {
-        setStorage: function (opts) {
-            var key = opts.key, data = opts.data;
-            //@ts-ignore
-            wx.setStorageSync(key, data);
-        },
-        getStorage: function (opts) {
-            var key = opts.key;
-            //@ts-ignore
-            return wx.getStorageSync(key);
-        },
-        removeStorage: function (opts) {
-            var key = opts.key;
-            //@ts-ignore
-            wx.removeStorageSync(key);
-        },
-        //是否存在key值
-        hasKey: function (key) {
-            //@ts-ignore
-            return hasKey(wx, key);
-        },
-    };
-}
-//uni 或者 支付宝
-function uniOrAliPayMiniProgram() {
-    //@ts-ignore
-    var platform = my || uni;
-    return {
-        setStorage: platform.setStorageSync,
-        getStorage: platform.getStorageSync,
-        removeStorage: platform.removeStorageSync,
-        //是否存在key值
-        hasKey: function (key) {
-            return hasKey(platform, key);
-        },
-    };
-}
-//浏览器
-function browser() {
-    var localStorage = window.localStorage;
-    return {
-        setStorage: function (opts) {
-            var key = opts.key, data = opts.data;
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-            }
-            catch (e) {
-                return localStorage.setItem(key, data);
-            }
-        },
-        getStorage: function (opts) {
-            var key = opts.key;
-            try {
-                return JSON.parse(localStorage.getItem(key));
-            }
-            catch (e) {
-                return localStorage.getItem(key);
-            }
-        },
-        removeStorage: function (opts) {
-            var key = opts.key;
-            return localStorage.removeItem(key);
-        },
-        //是否存在key值
-        hasKey: function (key) {
-            return key in localStorage;
-        },
-    };
-}
-function weChatGlobal() {
-    try {
-        //@ts-ignore
-        return wx && wx.setStorageSync && wx.getStorageSync;
-    }
-    catch (e) {
-        return false;
-    }
-}
-function uniGlobal() {
-    try {
-        //@ts-ignore
-        return uni && uni.setStorageSync && uni.getStorageSync;
-    }
-    catch (e) {
-        return false;
-    }
-}
-function aliPayGlobal() {
-    try {
-        //@ts-ignore
-        return my && my.setStorageSync && my.getStorageSync;
-    }
-    catch (e) {
-        return false;
-    }
-}
-//兼容处理
-var storage = (function () {
-    if (aliPayGlobal() || uniGlobal()) {
-        //uni 或者 支付宝
-        return uniOrAliPayMiniProgram();
-    }
-    else if (weChatGlobal()) {
-        //微信小程序
-        return weChatMiniProgram();
-    }
-    else if (window && window.localStorage) {
-        //浏览器
-        return browser();
-    }
-    console.warn("\u5F53\u524D\u73AF\u5883\u4E0D\u652F\u6301");
-    return null;
-})();
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var _hook__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
+
+
 //存储的方法名
 function genStorageMethodName(key) {
     //第一位符
@@ -279,7 +155,7 @@ function removeExpireStorage(opts) {
         prefixName: this.prefixName,
     });
     //检查是否是过期
-    if (!storage.hasKey(prefixNameExpireTimeKey))
+    if (!_storage__WEBPACK_IMPORTED_MODULE_0__["default"].hasKey(prefixNameExpireTimeKey))
         return;
     var expireTime = this.getExpireTime({
         key: key,
@@ -325,7 +201,7 @@ function setStorageExpire(opts) {
 //生成key和前缀有关
 function getKey(key) {
     //前缀
-    var currentPrefix = hook(null, this.prefixName);
+    var currentPrefix = Object(_hook__WEBPACK_IMPORTED_MODULE_1__["hook"])(null, this.prefixName);
     //设置前缀key
     return "" + (currentPrefix || "") + key;
 }
@@ -391,7 +267,7 @@ var BluePerformStorage = /** @class */ (function () {
     BluePerformStorage.prototype.setStorage = function (opts) {
         var key = opts.key;
         //钩子
-        hook(this, this.hooks.set, [
+        Object(_hook__WEBPACK_IMPORTED_MODULE_1__["hook"])(this, this.hooks.set, [
             {
                 key: key,
             },
@@ -400,7 +276,7 @@ var BluePerformStorage = /** @class */ (function () {
         setStorageExpire.call(this, opts);
         //重写key 针对前缀生成
         setOptionsPrefixKey.call(this, opts);
-        return storage.setStorage(opts);
+        return _storage__WEBPACK_IMPORTED_MODULE_0__["default"].setStorage(opts);
     };
     //获取storage
     BluePerformStorage.prototype.getStorage = function (opts) {
@@ -411,9 +287,9 @@ var BluePerformStorage = /** @class */ (function () {
         });
         //重写key 针对前缀生成
         setOptionsPrefixKey.call(this, opts);
-        var data = storage.getStorage(opts);
+        var data = _storage__WEBPACK_IMPORTED_MODULE_0__["default"].getStorage(opts);
         //钩子
-        hook(this, this.hooks.get, [
+        Object(_hook__WEBPACK_IMPORTED_MODULE_1__["hook"])(this, this.hooks.get, [
             {
                 key: key,
                 data: data,
@@ -427,12 +303,12 @@ var BluePerformStorage = /** @class */ (function () {
         //重写key 针对前缀生成
         setOptionsPrefixKey.call(this, opts);
         //钩子
-        hook(this, this.hooks.remove, [
+        Object(_hook__WEBPACK_IMPORTED_MODULE_1__["hook"])(this, this.hooks.remove, [
             {
                 key: key,
             },
         ]);
-        return storage.removeStorage(opts);
+        return _storage__WEBPACK_IMPORTED_MODULE_0__["default"].removeStorage(opts);
     };
     //获取超时时间
     BluePerformStorage.prototype.getExpireTime = function (opts) {
@@ -466,6 +342,293 @@ var BluePerformStorage = /** @class */ (function () {
     return BluePerformStorage;
 }());
 /* harmony default export */ __webpack_exports__["default"] = (BluePerformStorage);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _platform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+
+//是否存在key记录
+function hasKey(platform, key) {
+    var info = platform.getStorageInfoSync();
+    return !!info.keys[key];
+}
+//方法处理
+function storageMethods(opts) {
+    var platform = opts.platform, platformName = opts.platformName;
+    //选项式风格 支付宝和百度为选项式风格
+    var optsStyle = [
+        _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].ALIPAY,
+        _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].BAIDU,
+        _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].DINGDING,
+    ].includes(platformName);
+    return {
+        //设置存储
+        setStorage: (function () {
+            if (optsStyle) {
+                return function (opts) {
+                    var key = opts.key, data = opts.data;
+                    platform.setStorageSync({
+                        key: key,
+                        data: data,
+                    });
+                };
+            }
+            else {
+                return function (opts) {
+                    var key = opts.key, data = opts.data;
+                    platform.setStorageSync(key, data);
+                };
+            }
+        })(),
+        //获取存储
+        getStorage: (function () {
+            if (optsStyle) {
+                return function (opts) {
+                    var key = opts.key;
+                    //支付宝，百度存在data包围
+                    var result = platform.getStorageSync({
+                        key: key,
+                    });
+                    return result.data;
+                };
+            }
+            else {
+                return function (opts) {
+                    var key = opts.key;
+                    return platform.getStorageSync(key);
+                };
+            }
+        })(),
+        removeStorage: (function () {
+            if (optsStyle) {
+                return function (opts) {
+                    var key = opts.key;
+                    return platform.removeStorageSync({
+                        key: key,
+                    });
+                };
+            }
+            else {
+                return function (opts) {
+                    var key = opts.key;
+                    return platform.removeStorageSync(key);
+                };
+            }
+        })(),
+        //是否存在key值
+        hasKey: function (key) {
+            //@ts-ignore
+            return hasKey(platform, key);
+        },
+    };
+}
+//浏览器
+function browser() {
+    var localStorage = window.localStorage;
+    return {
+        setStorage: function (opts) {
+            var key = opts.key, data = opts.data;
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            }
+            catch (e) {
+                return localStorage.setItem(key, data);
+            }
+        },
+        getStorage: function (opts) {
+            var key = opts.key;
+            try {
+                return JSON.parse(localStorage.getItem(key));
+            }
+            catch (e) {
+                return localStorage.getItem(key);
+            }
+        },
+        removeStorage: function (opts) {
+            var key = opts.key;
+            return localStorage.removeItem(key);
+        },
+        //是否存在key值
+        hasKey: function (key) {
+            return key in localStorage;
+        },
+    };
+}
+//兼容处理
+var storage = (function () {
+    if (Object(_platform__WEBPACK_IMPORTED_MODULE_0__["uniPlatform"])()) {
+        //uni-app
+        return storageMethods({
+            //@ts-ignore
+            platform: uni,
+            platformName: _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].UNI,
+        });
+    }
+    else if (Object(_platform__WEBPACK_IMPORTED_MODULE_0__["aliPayPlatform"])()) {
+        //支付宝小程序
+        return storageMethods({
+            //@ts-ignore
+            platform: my,
+            platformName: _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].ALIPAY,
+        });
+    }
+    else if (Object(_platform__WEBPACK_IMPORTED_MODULE_0__["dingDingPlatform"])()) {
+        //钉钉
+        return storageMethods({
+            //@ts-ignore
+            platform: dd,
+            platformName: _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].DINGDING,
+        });
+    }
+    else if (Object(_platform__WEBPACK_IMPORTED_MODULE_0__["weChatPlatform"])()) {
+        //微信小程序
+        return storageMethods({
+            //@ts-ignore
+            platform: wx,
+            platformName: _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].WECHAT,
+        });
+    }
+    else if (Object(_platform__WEBPACK_IMPORTED_MODULE_0__["baiduPlatform"])()) {
+        //微信小程序
+        return storageMethods({
+            //@ts-ignore
+            platform: swan,
+            platformName: _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].BAIDU,
+        });
+    }
+    else if (Object(_platform__WEBPACK_IMPORTED_MODULE_0__["byteDancePlatform"])()) {
+        //字节跳动
+        return storageMethods({
+            //@ts-ignore
+            platform: tt,
+            platformName: _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].BYTEDANCE,
+        });
+    }
+    else if (window && window.localStorage) {
+        //浏览器
+        return browser();
+    }
+    console.warn("\u5F53\u524D\u73AF\u5883\u4E0D\u652F\u6301");
+    return null;
+})();
+/* harmony default export */ __webpack_exports__["default"] = (storage);
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PLATFORM_NAME", function() { return PLATFORM_NAME; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "weChatPlatform", function() { return weChatPlatform; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "uniPlatform", function() { return uniPlatform; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "aliPayPlatform", function() { return aliPayPlatform; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "baiduPlatform", function() { return baiduPlatform; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "byteDancePlatform", function() { return byteDancePlatform; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dingDingPlatform", function() { return dingDingPlatform; });
+//平台名
+var PLATFORM_NAME;
+(function (PLATFORM_NAME) {
+    //微信
+    PLATFORM_NAME["WECHAT"] = "wx";
+    //uni-app
+    PLATFORM_NAME["UNI"] = "uni";
+    //支付宝
+    PLATFORM_NAME["ALIPAY"] = "my";
+    //百度
+    PLATFORM_NAME["BAIDU"] = "swan";
+    //字节跳动
+    PLATFORM_NAME["BYTEDANCE"] = "tt";
+    //钉钉跳动
+    PLATFORM_NAME["DINGDING"] = "dd";
+})(PLATFORM_NAME || (PLATFORM_NAME = {}));
+//检查环境
+function checkPlatform(platform) {
+    return !!(platform && platform.setStorageSync && platform.getStorageSync);
+}
+//微信环境
+function weChatPlatform() {
+    try {
+        //@ts-ignore
+        return checkPlatform(wx);
+    }
+    catch (e) {
+        return false;
+    }
+}
+//通用环境
+function uniPlatform() {
+    try {
+        //@ts-ignore
+        return checkPlatform(uni);
+    }
+    catch (e) {
+        return false;
+    }
+}
+//支付宝环境
+function aliPayPlatform() {
+    try {
+        //@ts-ignore
+        return checkPlatform(my);
+    }
+    catch (e) {
+        return false;
+    }
+}
+//百度小程序环境
+function baiduPlatform() {
+    try {
+        //@ts-ignore
+        return checkPlatform(swan);
+    }
+    catch (e) {
+        return false;
+    }
+}
+//字节跳动小程序环境
+function byteDancePlatform() {
+    try {
+        //@ts-ignore
+        return checkPlatform(tt);
+    }
+    catch (e) {
+        return false;
+    }
+}
+//字节跳动小程序环境
+function dingDingPlatform() {
+    try {
+        //@ts-ignore
+        return checkPlatform(dd);
+    }
+    catch (e) {
+        return false;
+    }
+}
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hook", function() { return hook; });
+//hook处理
+function hook(ctx, fn, args) {
+    if (args === void 0) { args = []; }
+    if (typeof fn === "function") {
+        return fn.apply(ctx, args);
+    }
+    return fn;
+}
 
 
 /***/ })
