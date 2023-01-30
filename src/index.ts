@@ -12,10 +12,12 @@ import { hook } from "./hook";
 
 //存储的方法名
 function genStorageMethodName(key: TKey): string {
-  //第一位符
-  const firstChar = key.toLocaleUpperCase()[0];
-  //转化MethodsKey
-  return `${firstChar}${key.substring(1, key.length)}`;
+  return key
+    .split(`_`)
+    .map((current) => {
+      return current[0].toUpperCase() + current.substring(1, current.length);
+    })
+    .join(``);
 }
 
 //初始化设置对应keys配置

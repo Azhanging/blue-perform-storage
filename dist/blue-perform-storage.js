@@ -1,10 +1,10 @@
 /*!
  * 
- * blue-perform-storage.js 1.0.2
- * (c) 2016-2022 Blue
+ * blue-perform-storage.js 1.0.3
+ * (c) 2016-2023 Blue
  * Released under the MIT License.
  * https://github.com/azhanging/blue-perform-storage
- * time:Wed, 24 Aug 2022 18:19:32 GMT
+ * time:Mon, 30 Jan 2023 01:54:28 GMT
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -115,10 +115,12 @@ __webpack_require__.r(__webpack_exports__);
 
 //存储的方法名
 function genStorageMethodName(key) {
-    //第一位符
-    var firstChar = key.toLocaleUpperCase()[0];
-    //转化MethodsKey
-    return "" + firstChar + key.substring(1, key.length);
+    return key
+        .split("_")
+        .map(function (current) {
+        return current[0].toUpperCase() + current.substring(1, current.length);
+    })
+        .join("");
 }
 //初始化设置对应keys配置
 function init() {
