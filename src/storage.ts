@@ -1,4 +1,8 @@
-import { TKeyHandlerOptions, TSetStorageHandlerOptions } from "./types";
+import type {
+  TKeyHandlerOptions,
+  TSetStorageHandlerOptions,
+  TStorageValue,
+} from "./types";
 
 import {
   PLATFORM_NAME,
@@ -13,7 +17,7 @@ import {
 //是否存在key记录
 function hasKey(platform: any, key: string): boolean {
   const info = platform.getStorageInfoSync();
-  return !!info.keys[key];
+  return !!info.keys.includes(key);
 }
 
 //方法处理
@@ -25,56 +29,49 @@ function storageMethods(opts: { platform: any; platformName: PLATFORM_NAME }) {
     PLATFORM_NAME.BAIDU,
     PLATFORM_NAME.DINGDING,
   ].includes(platformName);
+  const { setStorageSync, getStorageSync, removeStorageSync } = platform;
   return {
     //设置存储
     setStorage: (() => {
-      if (optsStyle) {
-        return (opts: TSetStorageHandlerOptions) => {
-          const { key, data } = opts;
-          platform.setStorageSync({
+      return (opts: TSetStorageHandlerOptions) => {
+        const { key, data } = opts;
+        if (optsStyle) {
+          setStorageSync({
             key,
             data,
           });
-        };
-      } else {
-        return (opts: TSetStorageHandlerOptions) => {
-          const { key, data } = opts;
-          platform.setStorageSync(key, data);
-        };
-      }
+        } else {
+          setStorageSync(key, data);
+        }
+      };
     })(),
     //获取存储
     getStorage: (() => {
-      if (optsStyle) {
-        return (opts: TKeyHandlerOptions) => {
-          const { key } = opts;
+      return (opts: TKeyHandlerOptions) => {
+        const { key } = opts;
+        if (optsStyle) {
           //支付宝，百度存在data包围
-          const result = platform.getStorageSync({
+          const result = getStorageSync({
             key,
           });
           return result.data;
-        };
-      } else {
-        return (opts: TKeyHandlerOptions) => {
-          const { key } = opts;
-          return platform.getStorageSync(key);
-        };
-      }
+        } else {
+          return getStorageSync(key);
+        }
+      };
     })(),
+    //删除数据
     removeStorage: (() => {
-      if (optsStyle) {
-        return (opts: TKeyHandlerOptions) => {
-          const { key } = opts;
-          return platform.removeStorageSync({
+      return (opts: TKeyHandlerOptions) => {
+        const { key } = opts;
+        if (optsStyle) {
+          return removeStorageSync({
             key,
           });
-        };
-      } else {
-        return (opts: TKeyHandlerOptions) => {
-          const { key } = opts;
-          return platform.removeStorageSync(key);
-        };
-      }
+        } else {
+          return removeStorageSync(key);
+        }
+      };
     })(),
     //是否存在key值
     hasKey(key: string): boolean {
@@ -87,19 +84,41 @@ function storageMethods(opts: { platform: any; platformName: PLATFORM_NAME }) {
 //浏览器
 function browser() {
   const { localStorage } = window;
+  //可存储的数据类型
+  const dataTypes = [`object`, `string`, `number`, `boolean`, `undefined`];
   return {
     setStorage(opts: TSetStorageHandlerOptions) {
       const { key, data } = opts;
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-      } catch (e) {
-        return localStorage.setItem(key, data);
-      }
+      const type: string = typeof data;
+      //写入的值
+      const value: TStorageValue = (() => {
+        //属于正常数据类型
+        if (dataTypes.includes(type)) {
+          return {
+            type,
+            data,
+          };
+        } else {
+          return {
+            type,
+          };
+        }
+      })();
+      //写入解析好的数据
+      localStorage.setItem(key, JSON.stringify(value));
     },
     getStorage(opts: TKeyHandlerOptions) {
       const { key } = opts;
       try {
-        return JSON.parse(localStorage.getItem(key));
+        const storageValue = JSON.parse(localStorage.getItem(key));
+        const { data, type } = storageValue;
+        //undefined提供会undefined处理
+        if (type === `undefined`) return ``;
+        //如果存在值
+        if (data !== undefined) {
+          return data;
+        }
+        return data.toString();
       } catch (e) {
         return localStorage.getItem(key);
       }

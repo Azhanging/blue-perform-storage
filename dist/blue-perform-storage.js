@@ -1,10 +1,10 @@
 /*!
  * 
- * blue-perform-storage.js 1.0.3
- * (c) 2016-2023 Blue
+ * blue-perform-storage.js 1.0.4
+ * (c) 2016-2024 Blue
  * Released under the MIT License.
  * https://github.com/azhanging/blue-perform-storage
- * time:Mon, 30 Jan 2023 01:54:28 GMT
+ * time:Tue, 20 Feb 2024 09:39:25 GMT
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -357,7 +357,7 @@ __webpack_require__.r(__webpack_exports__);
 //是否存在key记录
 function hasKey(platform, key) {
     var info = platform.getStorageInfoSync();
-    return !!info.keys[key];
+    return !!info.keys.includes(key);
 }
 //方法处理
 function storageMethods(opts) {
@@ -368,59 +368,52 @@ function storageMethods(opts) {
         _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].BAIDU,
         _platform__WEBPACK_IMPORTED_MODULE_0__["PLATFORM_NAME"].DINGDING,
     ].includes(platformName);
+    var setStorageSync = platform.setStorageSync, getStorageSync = platform.getStorageSync, removeStorageSync = platform.removeStorageSync;
     return {
         //设置存储
         setStorage: (function () {
-            if (optsStyle) {
-                return function (opts) {
-                    var key = opts.key, data = opts.data;
-                    platform.setStorageSync({
+            return function (opts) {
+                var key = opts.key, data = opts.data;
+                if (optsStyle) {
+                    setStorageSync({
                         key: key,
                         data: data,
                     });
-                };
-            }
-            else {
-                return function (opts) {
-                    var key = opts.key, data = opts.data;
-                    platform.setStorageSync(key, data);
-                };
-            }
+                }
+                else {
+                    setStorageSync(key, data);
+                }
+            };
         })(),
         //获取存储
         getStorage: (function () {
-            if (optsStyle) {
-                return function (opts) {
-                    var key = opts.key;
+            return function (opts) {
+                var key = opts.key;
+                if (optsStyle) {
                     //支付宝，百度存在data包围
-                    var result = platform.getStorageSync({
+                    var result = getStorageSync({
                         key: key,
                     });
                     return result.data;
-                };
-            }
-            else {
-                return function (opts) {
-                    var key = opts.key;
-                    return platform.getStorageSync(key);
-                };
-            }
+                }
+                else {
+                    return getStorageSync(key);
+                }
+            };
         })(),
+        //删除数据
         removeStorage: (function () {
-            if (optsStyle) {
-                return function (opts) {
-                    var key = opts.key;
-                    return platform.removeStorageSync({
+            return function (opts) {
+                var key = opts.key;
+                if (optsStyle) {
+                    return removeStorageSync({
                         key: key,
                     });
-                };
-            }
-            else {
-                return function (opts) {
-                    var key = opts.key;
-                    return platform.removeStorageSync(key);
-                };
-            }
+                }
+                else {
+                    return removeStorageSync(key);
+                }
+            };
         })(),
         //是否存在key值
         hasKey: function (key) {
@@ -432,20 +425,43 @@ function storageMethods(opts) {
 //浏览器
 function browser() {
     var localStorage = window.localStorage;
+    //可存储的数据类型
+    var dataTypes = ["object", "string", "number", "boolean", "undefined"];
     return {
         setStorage: function (opts) {
             var key = opts.key, data = opts.data;
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-            }
-            catch (e) {
-                return localStorage.setItem(key, data);
-            }
+            var type = typeof data;
+            //写入的值
+            var value = (function () {
+                //属于正常数据类型
+                if (dataTypes.includes(type)) {
+                    return {
+                        type: type,
+                        data: data,
+                    };
+                }
+                else {
+                    return {
+                        type: type,
+                    };
+                }
+            })();
+            //写入解析好的数据
+            localStorage.setItem(key, JSON.stringify(value));
         },
         getStorage: function (opts) {
             var key = opts.key;
             try {
-                return JSON.parse(localStorage.getItem(key));
+                var storageValue = JSON.parse(localStorage.getItem(key));
+                var data = storageValue.data, type = storageValue.type;
+                //undefined提供会undefined处理
+                if (type === "undefined")
+                    return "";
+                //如果存在值
+                if (data !== undefined) {
+                    return data;
+                }
+                return data.toString();
             }
             catch (e) {
                 return localStorage.getItem(key);

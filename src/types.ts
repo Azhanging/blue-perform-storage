@@ -40,3 +40,9 @@ export interface TConstructorOptions {
   //构造keys配置
   keys?: TKeyOptions[];
 }
+
+//存储类型值
+export interface TStorageValue {
+  type: string;
+  data?: any;
+}

@@ -1,6 +1,6 @@
 {
   "name": "blue-perform-storage",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "perform storage",
   "main": "./index.js",
   "types": "./types/index.d.ts",

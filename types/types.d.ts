@@ -24,3 +24,7 @@ export interface TConstructorOptions {
     expireTimeName?: string;
     keys?: TKeyOptions[];
 }
+export interface TStorageValue {
+    type: string;
+    data?: any;
+}

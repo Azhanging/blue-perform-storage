@@ -1,4 +1,4 @@
-import { TKeyHandlerOptions, TSetStorageHandlerOptions } from "./types";
+import type { TKeyHandlerOptions, TSetStorageHandlerOptions } from "./types";
 declare const storage: {
     setStorage: (opts: TSetStorageHandlerOptions) => void;
     getStorage: (opts: TKeyHandlerOptions) => any;

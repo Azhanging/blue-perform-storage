@@ -2,8 +2,64 @@
   <script src="./dist/blue-perform-storage.js"></script>
   <script>
     const pStorage = new BluePerformStorage({
-      keys: [`a_De_kde`],
+      keys: [
+        //测试方法转换
+        `a_De_kde`,
+        //测试相关类型处理
+        `undefined`,
+        `null`,
+        `symbol`,
+        `function`,
+        `number`,
+        `object`,
+        `array`,
+      ],
     });
+
+    class ClassData {
+      constructor() {
+        this.data = 1;
+      }
+      someMethod() {}
+    }
+
+    pStorage.setUndefined(undefined);
+    pStorage.setNull(null);
+    pStorage.setSymbol(Symbol());
+    pStorage.setFunction(function () {});
+    pStorage.setNumber(1111);
+
+    pStorage.setObject({
+      some: `someData`,
+      handler() {},
+      symbol: Symbol(),
+      number: 1,
+      classData: new ClassData(),
+    });
+
+    pStorage.setArray([
+      {
+        a: 1,
+      },
+      `2`,
+      Symbol(),
+      function () {},
+      undefined,
+      1,
+      new ClassData(),
+      new Promise(() => {}),
+    ]);
+
+    /* ---------------------------- */
+
+    console.log(`undefined data =>`, pStorage.getUndefined());
+    console.log(`null data =>`, pStorage.getNull());
+    console.log(`symbol data =>`, pStorage.getSymbol());
+    console.log(`function data =>`, pStorage.getFunction());
+    console.log(`number data =>`, pStorage.getNumber());
+    console.log(`object data =>`, pStorage.getObject());
+    console.log(`array data =>`, pStorage.getArray());
+
     console.log(pStorage);
   </script>
 </html>
