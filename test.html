@@ -13,6 +13,7 @@
         `number`,
         `object`,
         `array`,
+        `string`,
       ],
     });
 
@@ -23,12 +24,14 @@
       someMethod() {}
     }
 
+    
     pStorage.setUndefined(undefined);
     pStorage.setNull(null);
     pStorage.setSymbol(Symbol());
     pStorage.setFunction(function () {});
     pStorage.setNumber(1111);
-
+    pStorage.setString(`45456`)
+    
     pStorage.setObject({
       some: `someData`,
       handler() {},
@@ -56,6 +59,7 @@
     console.log(`null data =>`, pStorage.getNull());
     console.log(`symbol data =>`, pStorage.getSymbol());
     console.log(`function data =>`, pStorage.getFunction());
+    console.log(`string data =>`, pStorage.getString());
     console.log(`number data =>`, pStorage.getNumber());
     console.log(`object data =>`, pStorage.getObject());
     console.log(`array data =>`, pStorage.getArray());

@@ -1,10 +1,10 @@
 /*!
  * 
- * blue-perform-storage.js 1.0.4
+ * blue-perform-storage.js 1.0.5
  * (c) 2016-2024 Blue
  * Released under the MIT License.
  * https://github.com/azhanging/blue-perform-storage
- * time:Tue, 20 Feb 2024 09:39:25 GMT
+ * time:Mon, 26 Feb 2024 06:21:24 GMT
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -425,29 +425,37 @@ function storageMethods(opts) {
 //浏览器
 function browser() {
     var localStorage = window.localStorage;
-    //可存储的数据类型
-    var dataTypes = ["object", "string", "number", "boolean", "undefined"];
+    //需要包装的存储数据类型
+    var dataTypes = ["object", "number", "boolean", "undefined"];
     return {
         setStorage: function (opts) {
             var key = opts.key, data = opts.data;
             var type = typeof data;
-            //写入的值
-            var value = (function () {
-                //属于正常数据类型
-                if (dataTypes.includes(type)) {
-                    return {
-                        type: type,
-                        data: data,
-                    };
-                }
-                else {
-                    return {
-                        type: type,
-                    };
-                }
-            })();
-            //写入解析好的数据
-            localStorage.setItem(key, JSON.stringify(value));
+            //字符串类型 直接存储处理
+            if (type === "string") {
+                //写入解析好的数据
+                localStorage.setItem(key, data);
+            }
+            else {
+                //写入的值
+                var value = (function () {
+                    //属于正常数据类型
+                    if (dataTypes.includes(type)) {
+                        //其他类型按类型处理
+                        return {
+                            type: type,
+                            data: data,
+                        };
+                    }
+                    else {
+                        return {
+                            type: type,
+                        };
+                    }
+                })();
+                //写入解析好的数据
+                localStorage.setItem(key, JSON.stringify(value));
+            }
         },
         getStorage: function (opts) {
             var key = opts.key;
@@ -464,6 +472,7 @@ function browser() {
                 return data.toString();
             }
             catch (e) {
+                //错误解析包含string类型都以这里的获取为主
                 return localStorage.getItem(key);
             }
         },

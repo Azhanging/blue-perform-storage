@@ -84,28 +84,35 @@ function storageMethods(opts: { platform: any; platformName: PLATFORM_NAME }) {
 //浏览器
 function browser() {
   const { localStorage } = window;
-  //可存储的数据类型
-  const dataTypes = [`object`, `string`, `number`, `boolean`, `undefined`];
+  //需要包装的存储数据类型
+  const dataTypes = [`object`, `number`, `boolean`, `undefined`];
   return {
     setStorage(opts: TSetStorageHandlerOptions) {
       const { key, data } = opts;
       const type: string = typeof data;
-      //写入的值
-      const value: TStorageValue = (() => {
-        //属于正常数据类型
-        if (dataTypes.includes(type)) {
-          return {
-            type,
-            data,
-          };
-        } else {
-          return {
-            type,
-          };
-        }
-      })();
-      //写入解析好的数据
-      localStorage.setItem(key, JSON.stringify(value));
+      //字符串类型 直接存储处理
+      if (type === `string`) {
+        //写入解析好的数据
+        localStorage.setItem(key, data);
+      } else {
+        //写入的值
+        const value: TStorageValue | string = (() => {
+          //属于正常数据类型
+          if (dataTypes.includes(type)) {
+            //其他类型按类型处理
+            return {
+              type,
+              data,
+            };
+          } else {
+            return {
+              type,
+            };
+          }
+        })();
+        //写入解析好的数据
+        localStorage.setItem(key, JSON.stringify(value));
+      }
     },
     getStorage(opts: TKeyHandlerOptions) {
       const { key } = opts;
@@ -120,6 +127,7 @@ function browser() {
         }
         return data.toString();
       } catch (e) {
+        //错误解析包含string类型都以这里的获取为主
         return localStorage.getItem(key);
       }
     },
